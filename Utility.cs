@@ -1,4 +1,5 @@
 ﻿namespace ContactManager;
+
 public static class Utility
 {
     public static int SelectEnum(string label, int start, int end)
@@ -18,4 +19,14 @@ public static class Utility
     {
         return value >= start && value <= end;
     }
+
+    // public static ContactType GetContactType(string typeString)
+    // {
+    //     if (Enum.TryParse(typeString, true, out ContactType contactType))
+    //     {
+    //         return contactType;
+    //     }
+
+    //     throw new Exception($"Invalid contact type '{typeString}'.");
+    // }
 }
