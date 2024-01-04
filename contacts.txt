@@ -1,2 +1,2 @@
-Id:1, Name:Abbey, Phone number:09121773217, Email:abdullahabeyking@gmail.com, Contact Type: Family and Friends, Date Created:3 minutes ago
-Id:2, Name:Ade, Phone number:09121973217, Email:Ade@gmail.com, Contact Type: Work or Business, Date Created:now
+Id	Name	Phone Number	Email	Contact Type	Date Created
+1	Abbey	Abbey@gmail.com	09121973217	Work or Business	now

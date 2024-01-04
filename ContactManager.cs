@@ -210,21 +210,31 @@ public void UpdateContact(string phoneNumber, string name, string email)
     }
 
     private void SaveContactsToFile()
+    {
+        try
         {
-            try
+            using (StreamWriter writer = new StreamWriter(ContactsFilePath))
             {
-                using (StreamWriter writer = new StreamWriter(ContactsFilePath))
+                writer.WriteLine("Id\tName\tPhone Number\tEmail\tContact Type\tDate Created");
+
+                foreach (var contact in Contacts)
                 {
-                    foreach (var contact in Contacts)
-                    {
-                        string line = $"Id:{contact.Id}, Name:{contact.Name}, Phone number:{contact.PhoneNumber}, Email:{contact.Email}, Contact Type: {contact.ContactType.Humanize()}, Date Created:{contact.CreatedAt.Humanize()}";
-                        writer.WriteLine(line);
-                    }
+                    string line = $"{contact.Id}\t{contact.Name}\t{contact.PhoneNumber}\t{contact.Email}\t{contact.ContactType.Humanize()}\t{contact.CreatedAt.Humanize()}";
+                    writer.WriteLine(line);
                 }
             }
-            catch (Exception ex)
-            {
-                Console.WriteLine("An error occurred while saving contacts to file: " + ex.Message);
-            }
+            // using (StreamWriter writer = new StreamWriter(ContactsFilePath))
+            // {
+            //     foreach (var contact in Contacts)
+            //     {
+            //         string line = $"Id:{contact.Id}, Name:{contact.Name}, Phone number:{contact.PhoneNumber}, Email:{contact.Email}, Contact Type: {contact.ContactType.Humanize()}, Date Created:{contact.CreatedAt.Humanize()}";
+            //         writer.WriteLine(line);
+            //     }
+            // }
         }
+        catch (Exception ex)
+        {
+            Console.WriteLine("An error occurred while saving contacts to file: " + ex.Message);
+        }
+    }
 }
