@@ -54,9 +54,9 @@ public class Menu
                     case 3:
                         Console.Write("Enter contact name: ");
                         var nameToEdit = Console.ReadLine()!;
-                        Console.WriteLine("Enter phone number: ");
+                        Console.Write("Enter phone number: ");
                         var phoneToEdit = Console.ReadLine()!;
-                        Console.WriteLine("Enter email: ");
+                        Console.Write("Enter email: ");
                         var emailToEdit = Console.ReadLine()!;
                         contactManager.UpdateContact(phoneToEdit, nameToEdit, emailToEdit);
                         break;

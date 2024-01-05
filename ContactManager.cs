@@ -6,11 +6,11 @@ namespace ContactManager;
 internal sealed class ContactManager : IContactManager
 {
     private const string ContactsFilePath = "contacts.txt";
-    public static List<Contact> Contacts = new();
+    private static List<Contact> Contacts = new();
     
     public ContactManager()
     {
-        LoadContactsFromFile();
+        Contacts = LoadContactsFromFile();
     }
     public void AddContact(string name, string phoneNumber, string? email, ContactType contactType)
     {
@@ -88,7 +88,6 @@ internal sealed class ContactManager : IContactManager
         }
     }
 
-
     public void GetContact(string phoneNumber)
     {
         try
@@ -132,7 +131,6 @@ internal sealed class ContactManager : IContactManager
             {
                 table.AddRow(contact.Id, contact.Name, contact.PhoneNumber, contact.Email, contact.ContactType.Humanize(), contact.CreatedAt.Humanize());
             }
-
             table.Write(Format.Alternative);
         }
         catch (Exception ex)
@@ -141,32 +139,32 @@ internal sealed class ContactManager : IContactManager
         }
     }
 
-public void UpdateContact(string phoneNumber, string name, string email)
-{
-    try
+    public void UpdateContact(string phoneNumber, string name, string email)
     {
-        var contact = FindContact(phoneNumber);
-
-        if (contact is null)
+        try
         {
-            throw new ContactException("Contact does not exist!");
+            var contact = FindContact(phoneNumber);
+
+            if (contact is null)
+            {
+                throw new ContactException("Contact does not exist!");
+            }
+
+            contact.Name = name;
+            contact.Email = email;
+            Console.WriteLine("Contact updated successfully.");
+
+            SaveContactsToFile();
         }
-
-        contact.Name = name;
-        contact.Email = email;
-        Console.WriteLine("Contact updated successfully.");
-
-        SaveContactsToFile();
+        catch (ContactException ex)
+        {
+            Console.WriteLine(ex.Message);
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine("An error occurred while updating the contact: " + ex.Message);
+        }
     }
-    catch (ContactException ex)
-    {
-        Console.WriteLine(ex.Message);
-    }
-    catch (Exception ex)
-    {
-        Console.WriteLine("An error occurred while updating the contact: " + ex.Message);
-    }
-}
 
     private void Print(Contact contact)
     {
@@ -186,8 +184,10 @@ public void UpdateContact(string phoneNumber, string name, string email)
         }
     }
 
-    private void LoadContactsFromFile()
+    private List<Contact> LoadContactsFromFile()
     {
+        var contacts = new List<Contact>();
+
         try
         {
             if (File.Exists(ContactsFilePath))
@@ -198,7 +198,7 @@ public void UpdateContact(string phoneNumber, string name, string email)
                     while ((line = reader.ReadLine()!) != null)
                     {
                         Contact contact = Contact.FromString(line);
-                        Contacts.Add(contact);
+                        contacts.Add(contact);
                     }
                 }
             }
@@ -207,30 +207,23 @@ public void UpdateContact(string phoneNumber, string name, string email)
         {
             Console.WriteLine("An error occurred while loading contacts from file: " + ex.Message);
         }
+
+        return contacts;
     }
 
     private void SaveContactsToFile()
     {
         try
         {
-            using (StreamWriter writer = new StreamWriter(ContactsFilePath))
+            using (StreamWriter writer = new StreamWriter(ContactsFilePath, true))
             {
-                writer.WriteLine("Id\tName\tPhone Number\tEmail\tContact Type\tDate Created");
-
                 foreach (var contact in Contacts)
                 {
-                    string line = $"{contact.Id}\t{contact.Name}\t{contact.PhoneNumber}\t{contact.Email}\t{contact.ContactType.Humanize()}\t{contact.CreatedAt.Humanize()}";
+                    string line =
+                        $"Id:{contact.Id}, Name:{contact.Name}, Phone number:{contact.PhoneNumber}, Email:{contact.Email}, Contact Type: {contact.ContactType.Humanize()}, Date Created:{contact.CreatedAt.Humanize()}";
                     writer.WriteLine(line);
                 }
             }
-            // using (StreamWriter writer = new StreamWriter(ContactsFilePath))
-            // {
-            //     foreach (var contact in Contacts)
-            //     {
-            //         string line = $"Id:{contact.Id}, Name:{contact.Name}, Phone number:{contact.PhoneNumber}, Email:{contact.Email}, Contact Type: {contact.ContactType.Humanize()}, Date Created:{contact.CreatedAt.Humanize()}";
-            //         writer.WriteLine(line);
-            //     }
-            // }
         }
         catch (Exception ex)
         {

@@ -1,2 +1,11 @@
-Id	Name	Phone Number	Email	Contact Type	Date Created
-1	Abbey	Abbey@gmail.com	09121973217	Work or Business	now
+Id:2, Name:Anny, Phone number:08065388692, Email:, Contact Type: Family and Friends, Date Created:3 minutes ago
+Id:1, Name:abc, Phone number:09121973217, Email:Abc@gmail.com, Contact Type: Family and Friends, Date Created:now
+Id:1, Name:abc, Phone number:09121973217, Email:Abc@gmail.com, Contact Type: Family and Friends, Date Created:7 seconds ago
+Id:1, Name:abc, Phone number:09121973217, Email:Abc@gmail.com, Contact Type: Family and Friends, Date Created:46 seconds ago
+Id:2, Name:def, Phone number:08189464609, Email:def@gmail.com, Contact Type: Work or Business, Date Created:now
+Id:1, Name:abc, Phone number:09121973217, Email:Abc@gmail.com, Contact Type: Family and Friends, Date Created:a minute ago
+Id:2, Name:def, Phone number:08189464609, Email:def@gmail.com, Contact Type: Work or Business, Date Created:a minute ago
+Id:3, Name:ade, Phone number:1234, Email:abbey, Contact Type: Family and Friends, Date Created:now
+Id:1, Name:abc, Phone number:09121973217, Email:Abc@gmail.com, Contact Type: Family and Friends, Date Created:2 minutes ago
+Id:2, Name:def, Phone number:08189464609, Email:def@gmail.com, Contact Type: Work or Business, Date Created:a minute ago
+Id:3, Name:ade, Phone number:1234, Email:abbey, Contact Type: Family and Friends, Date Created:30 seconds ago
