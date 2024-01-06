@@ -116,7 +116,7 @@ internal sealed class ContactManager : IContactManager
         
         if (contact is null)
         {
-            Console.WriteLine($"Contact with {phoneNumber} not found");
+            throw new ContactException($"Contact with {phoneNumber} not found");
         }
         else
         {
@@ -126,39 +126,56 @@ internal sealed class ContactManager : IContactManager
 
     public void GetAllContacts()
     {
-        int contactCount = Contacts.Count;
-
-        Console.WriteLine("You have " + "contact".ToQuantity(contactCount));
-
-        if (contactCount == 0)
+        try
         {
-            Console.WriteLine("There is no contact added yet.");
-            return;
+            LoadContacts();
+
+            int contactCount = Contacts.Count;
+
+            Console.WriteLine("You have " + "contact".ToQuantity(contactCount));
+
+            if (contactCount == 0)
+            {
+                Console.WriteLine("There is no contact added yet.");
+                return;
+            }
+
+            var table = new ConsoleTable("Id", "Name", "Phone Number", "Email", "Contact Type", "Date Created");
+
+            foreach (var contact in Contacts)
+            {
+                table.AddRow(contact.Id, contact.Name, contact.PhoneNumber, contact.Email, ((ContactType)contact.ContactType).Humanize(), contact.CreatedAt.Humanize());
+            }
+
+            table.Write(Format.Alternative);
+        }
+        catch (Exception ex)
+        {
+            throw new ContactException($"Error retrieving contacts: {ex.Message}");
         }
 
-        var table = new ConsoleTable("Id", "Name", "Phone Number", "Email", "Contact Type", "Date Created");
-
-        foreach (var contact in Contacts)
-        {
-            table.AddRow(contact.Id, contact.Name, contact.PhoneNumber, contact.Email, ((ContactType)contact.ContactType).Humanize(), contact.CreatedAt.Humanize());
-        }
-
-        table.Write(Format.Alternative);
     }
 
     public void UpdateContact(string phoneNumber, string name, string email)
     {
-        var contact = FindContact(phoneNumber);
-
-        if (contact is null)
+        try
         {
-            throw new ContactException("Contact does not exist!");
-        }
+            var contact = FindContact(phoneNumber);
 
-        contact.Name = name;
-        contact.Email = email;
-        Console.WriteLine("Contact updated successfully.");
-        SaveContacts();
+            if (contact is null)
+            {
+                throw new ContactException("Contact does not exist!");
+            }
+
+            contact.Name = name;
+            contact.Email = email;
+            Console.WriteLine("Contact updated successfully.");
+            SaveContacts();
+        }
+        catch (Exception ex)
+        {
+            throw new ContactException($"Error Updating contacts: {ex.Message}");
+        }
     }
     private void Print(Contact contact)
     {
