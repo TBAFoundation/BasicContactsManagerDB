@@ -198,3 +198,4 @@ C:\Users\DELL\Desktop\MGQSC#CLASS\BasicContactsManager\obj\Debug\net8.0\refint\B
 C:\Users\DELL\Desktop\MGQSC#CLASS\BasicContactsManager\obj\Debug\net8.0\BasicContactListFile.pdb
 C:\Users\DELL\Desktop\MGQSC#CLASS\BasicContactsManager\obj\Debug\net8.0\BasicContactListFile.genruntimeconfig.cache
 C:\Users\DELL\Desktop\MGQSC#CLASS\BasicContactsManager\obj\Debug\net8.0\ref\BasicContactListFile.dll
+C:\Users\DELL\Desktop\MGQSC#CLASS\BasicContactsManager\bin\Debug\net8.0\Newtonsoft.Json.dll
