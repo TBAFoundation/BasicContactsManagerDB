@@ -19,14 +19,4 @@ public static class Utility
     {
         return value >= start && value <= end;
     }
-
-    // public static ContactType GetContactType(string typeString)
-    // {
-    //     if (Enum.TryParse(typeString, true, out ContactType contactType))
-    //     {
-    //         return contactType;
-    //     }
-
-    //     throw new Exception($"Invalid contact type '{typeString}'.");
-    // }
 }

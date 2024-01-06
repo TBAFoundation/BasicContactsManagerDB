@@ -5,167 +5,161 @@ namespace ContactManager;
 
 internal sealed class ContactManager : IContactManager
 {
-    private const string ContactsFilePath = "contacts.txt";
+    // public static List<Contact> Contacts = new();
+    private static readonly string FilePath = "contacts.txt";
     private static List<Contact> Contacts = new();
-    
-    public ContactManager()
+
+    static ContactManager()
     {
-        Contacts = LoadContactsFromFile();
+        LoadContacts();
+    }
+
+    private static void LoadContacts()
+    {
+        try
+        {
+            if (File.Exists(FilePath))
+            {
+                using (StreamReader reader = new StreamReader(FilePath))
+                {
+                    string line;
+                    while ((line = reader.ReadLine()!) != null)
+                    {
+                        string[] contactData = line.Split('|');
+                        if (contactData.Length == 6)
+                        {
+                            Contacts.Add(new Contact
+                            {
+                                Id = int.Parse(contactData[0]),
+                                Name = contactData[1],
+                                PhoneNumber = contactData[2],
+                                Email = contactData[3],
+                                ContactType = (ContactType)Enum.Parse(typeof(ContactType), contactData[4]),
+                                CreatedAt = DateTime.Parse(contactData[5])
+                            });
+                        }
+                    }
+                }
+            }
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Error loading contacts: {ex.Message}");
+        }
+    }
+    private static void SaveContacts()
+    {
+        try
+        {
+            using (StreamWriter writer = new StreamWriter(FilePath, true))
+            {
+                foreach (var contact in Contacts)
+                {
+                    string line = $"{contact.Id}|{contact.Name}|{contact.PhoneNumber}|{contact.Email}|{(int)contact.ContactType}|{contact.CreatedAt:yyyy-MM-dd HH:mm:ss}";
+                    writer.WriteLine(line);
+                }
+            }
+        }
+        catch (Exception ex)
+        {
+            Console.WriteLine($"Error saving contacts: {ex.Message}");
+        }
     }
     public void AddContact(string name, string phoneNumber, string? email, ContactType contactType)
     {
-        try
+        int id = Contacts.Count > 0 ? Contacts.Count + 1 : 1;
+
+        var isContactExist = IsContactExist(phoneNumber);
+
+        if (isContactExist)
         {
-            var isContactExist = IsContactExist(phoneNumber);
-
-            if (IsContactExist(phoneNumber))
-            {
-                throw new ContactException($"Contact {phoneNumber} already exists.");
-            }
-
-            int id = Contacts.Count > 0 ? Contacts.Count + 1 : 1;
-
-            var contact = new Contact
-            {
-                Id = id,
-                Name = name,
-                PhoneNumber = phoneNumber,
-                Email = email,
-                ContactType = contactType,
-                CreatedAt = DateTime.Now
-            };
-
-            Contacts.Add(contact);
-            Console.WriteLine("Contact added successfully.");
-
-            SaveContactsToFile();
+            throw new ContactException("Contact already exists!");
         }
-        catch (ContactException ex)
+
+        var contact = new Contact
         {
-            Console.WriteLine(ex.Message);
-        }
-        catch (Exception ex)
-        {
-            Console.WriteLine("An error occurred while adding the contact: " + ex.Message);
-        }
+            Id = id,
+            Name = name,
+            PhoneNumber = phoneNumber,
+            Email = email,
+            ContactType = contactType,
+            CreatedAt = DateTime.Now
+        };
+
+        Contacts.Add(contact);
+        Console.WriteLine("Contact added successfully.");
+        SaveContacts();
     }
+
+
     public void DeleteContact(string phoneNumber)
     {
-        try
-        {
-            var contact = FindContact(phoneNumber);
+        var contact = FindContact(phoneNumber);
 
-            if (contact is null)
-            {
-                throw new ContactException($"Unable to delete as contact with '{phoneNumber}' not found.");
-            }
-
-            Contacts.Remove(contact);
-            Console.WriteLine("Contact deleted successfully.");
-
-            SaveContactsToFile();
-        }
-        catch (ContactException ex)
+        if (contact is null)
         {
-            Console.WriteLine(ex.Message);
+            throw new ContactException("Unable to delete contact as it does not exist!");
         }
-        catch (Exception ex)
-        {
-            Console.WriteLine("An error occurred while deleting the contact: " + ex.Message);
-        }
+
+        Contacts.Remove(contact);
+        SaveContacts();
     }
 
     public Contact? FindContact(string phoneNumber)
     {
-        try
-        {
-            return Contacts.Find(c => c.PhoneNumber == phoneNumber);
-        }
-        catch (Exception ex)
-        {
-            Console.WriteLine("An error occurred while finding the contact: " + ex.Message);
-            return null;
-        }
+        return Contacts.Find(c => c.PhoneNumber == phoneNumber);
     }
 
     public void GetContact(string phoneNumber)
     {
-        try
+        var contact = FindContact(phoneNumber);
+        
+        if (contact is null)
         {
-            var contact = FindContact(phoneNumber);
-
-            if (contact is null)
-            {
-                throw new ContactException($"Contact with {phoneNumber} not found");
-            }
-
+            Console.WriteLine($"Contact with {phoneNumber} not found");
+        }
+        else
+        {
             Print(contact);
-        }
-        catch (ContactException ex)
-        {
-            Console.WriteLine(ex.Message);
-        }
-        catch (Exception ex)
-        {
-            Console.WriteLine("An error occurred while getting the contact: " + ex.Message);
         }
     }
 
     public void GetAllContacts()
     {
-        try
+        int contactCount = Contacts.Count;
+
+        Console.WriteLine("You have " + "contact".ToQuantity(contactCount));
+
+        if (contactCount == 0)
         {
-            int contactCount = Contacts.Count;
-
-            Console.WriteLine("You have " + "contact".ToQuantity(contactCount));
-
-            if (contactCount == 0)
-            {
-                Console.WriteLine("There are no contacts added yet.");
-                return;
-            }
-
-            var table = new ConsoleTable("Id", "Name", "Phone Number", "Email", "Contact Type", "Date Created");
-
-            foreach (var contact in Contacts)
-            {
-                table.AddRow(contact.Id, contact.Name, contact.PhoneNumber, contact.Email, contact.ContactType.Humanize(), contact.CreatedAt.Humanize());
-            }
-            table.Write(Format.Alternative);
+            Console.WriteLine("There is no contact added yet.");
+            return;
         }
-        catch (Exception ex)
+
+        var table = new ConsoleTable("Id", "Name", "Phone Number", "Email", "Contact Type", "Date Created");
+
+        foreach (var contact in Contacts)
         {
-            Console.WriteLine("An error occurred while retrieving contacts: " + ex.Message);
+            table.AddRow(contact.Id, contact.Name, contact.PhoneNumber, contact.Email, ((ContactType)contact.ContactType).Humanize(), contact.CreatedAt.Humanize());
         }
+
+        table.Write(Format.Alternative);
     }
 
     public void UpdateContact(string phoneNumber, string name, string email)
     {
-        try
-        {
-            var contact = FindContact(phoneNumber);
+        var contact = FindContact(phoneNumber);
 
-            if (contact is null)
-            {
-                throw new ContactException("Contact does not exist!");
-            }
-
-            contact.Name = name;
-            contact.Email = email;
-            Console.WriteLine("Contact updated successfully.");
-
-            SaveContactsToFile();
-        }
-        catch (ContactException ex)
+        if (contact is null)
         {
-            Console.WriteLine(ex.Message);
+            throw new ContactException("Contact does not exist!");
         }
-        catch (Exception ex)
-        {
-            Console.WriteLine("An error occurred while updating the contact: " + ex.Message);
-        }
+
+        contact.Name = name;
+        contact.Email = email;
+        Console.WriteLine("Contact updated successfully.");
+        SaveContacts();
     }
-
     private void Print(Contact contact)
     {
         Console.WriteLine($"Name: {contact!.Name}\nPhone Number: {contact!.PhoneNumber}\nEmail: {contact!.Email}");
@@ -173,61 +167,6 @@ internal sealed class ContactManager : IContactManager
 
     private bool IsContactExist(string phoneNumber)
     {
-        try
-        {
-            return Contacts.Exists(c => c.PhoneNumber == phoneNumber);
-        }
-        catch (Exception ex)
-        {
-            Console.WriteLine("An error occurred while checking contact existence: " + ex.Message);
-            return false;
-        }
-    }
-
-    private List<Contact> LoadContactsFromFile()
-    {
-        var contacts = new List<Contact>();
-
-        try
-        {
-            if (File.Exists(ContactsFilePath))
-            {
-                using (StreamReader reader = new StreamReader(ContactsFilePath))
-                {
-                    string line;
-                    while ((line = reader.ReadLine()!) != null)
-                    {
-                        Contact contact = Contact.FromString(line);
-                        contacts.Add(contact);
-                    }
-                }
-            }
-        }
-        catch (Exception ex)
-        {
-            Console.WriteLine("An error occurred while loading contacts from file: " + ex.Message);
-        }
-
-        return contacts;
-    }
-
-    private void SaveContactsToFile()
-    {
-        try
-        {
-            using (StreamWriter writer = new StreamWriter(ContactsFilePath, true))
-            {
-                foreach (var contact in Contacts)
-                {
-                    string line =
-                        $"Id:{contact.Id}, Name:{contact.Name}, Phone number:{contact.PhoneNumber}, Email:{contact.Email}, Contact Type: {contact.ContactType.Humanize()}, Date Created:{contact.CreatedAt.Humanize()}";
-                    writer.WriteLine(line);
-                }
-            }
-        }
-        catch (Exception ex)
-        {
-            Console.WriteLine("An error occurred while saving contacts to file: " + ex.Message);
-        }
+        return Contacts.Any(c => c.PhoneNumber == phoneNumber);
     }
 }

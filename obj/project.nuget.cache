@@ -1,8 +1,8 @@
 {
   "version": 2,
-  "dgSpecHash": "n57kcFFjFclwzJmpp2fPMKqNRGH75tyejPagszI936wh4qCQs9Dsa8+Svj8iqeSICxtB10dnx+rqrdV9YSM4xA==",
+  "dgSpecHash": "GE1gz1W7luYofmP0vuD61tiGfojtB8Nsn6RDI5oeXLrs6SQaXDHZJcKroasS+qO4W9JTO4dyG5OsbvXK/Jsvwg==",
   "success": true,
-  "projectFilePath": "C:\\Users\\DELL\\Desktop\\MGQSC#CLASS\\BasicContactListFile\\BasicContactListFile.csproj",
+  "projectFilePath": "C:\\Users\\DELL\\Desktop\\MGQSC#CLASS\\BasicContactsManager\\BasicContactListFile.csproj",
   "expectedPackageFiles": [
     "C:\\Users\\DELL\\.nuget\\packages\\consoletables\\2.6.1\\consoletables.2.6.1.nupkg.sha512",
     "C:\\Users\\DELL\\.nuget\\packages\\humanizer\\2.14.1\\humanizer.2.14.1.nupkg.sha512",
