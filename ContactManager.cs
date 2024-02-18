@@ -1,11 +1,13 @@
-﻿using ConsoleTables;
+﻿using MySql.Data.MySqlClient;
+using ConsoleTables;
 using Humanizer;
+using System.Data;
 
 namespace ContactManager;
 
 internal sealed class ContactManager : IContactManager
 {
-    // public static List<Contact> Contacts = new();
+    private static readonly string ConnectionString = "Server = localhost; Database=MyContactsDB; User Id=root;Password= Dec**##2794;Port= 3306;";
     private static readonly string FilePath = "contacts.txt";
     private static List<Contact> Contacts = new();
 
@@ -18,22 +20,31 @@ internal sealed class ContactManager : IContactManager
     {
         try
         {
-            if (File.Exists(FilePath))
+            // Assuming you already have a table named 'Contacts' in your MySQL database
+            using (MySqlConnection connection = new MySqlConnection(ConnectionString))
             {
-                using (StreamReader reader = new StreamReader(FilePath))
+                connection.Open();
+
+                string selectQuery = "SELECT * FROM Contacts";
+                using (MySqlCommand command = new MySqlCommand(selectQuery, connection))
+                using (MySqlDataReader reader = command.ExecuteReader())
                 {
-                    string line;
-                    while ((line = reader.ReadLine()!) != null)
+                    while (reader.Read())
                     {
-                        Contact contact = DeserializeContact(line);
+                        Contact contact = new Contact
+                        {
+                            Id = reader.GetInt32("Id"),
+                            Name = reader.GetString("Name"),
+                            PhoneNumber = reader.GetString("PhoneNumber"),
+                            Email = reader.IsDBNull("Email") ? null : reader.GetString("Email"),
+                            ContactType = (ContactType)reader.GetInt32("ContactType"),
+                            CreatedAt = reader.GetDateTime("CreatedAt")
+                        };
+
                         Contacts.Add(contact);
                     }
                 }
             }
-        }
-        catch (FileNotFoundException)
-        {
-            
         }
         catch (Exception ex)
         {
@@ -104,32 +115,26 @@ internal sealed class ContactManager : IContactManager
     {
         try
         {
-            int id = Contacts.Count > 0 ? Contacts.Max(c => c.Id) + 1 : 1;
-
-            var isContactExist = IsContactExist(phoneNumber);
-
-            if (isContactExist)
+            using (MySqlConnection connection = new MySqlConnection(ConnectionString))
             {
-                throw new ContactException("Contact already exists!");
+                connection.Open();
+
+                string insertQuery = "INSERT INTO Contacts (Name, PhoneNumber, Email, ContactType, CreatedAt) " +
+                                    "VALUES (@Name, @PhoneNumber, @Email, @ContactType, @CreatedAt)";
+
+                using (MySqlCommand command = new MySqlCommand(insertQuery, connection))
+                {
+                    command.Parameters.AddWithValue("@Name", name);
+                    command.Parameters.AddWithValue("@PhoneNumber", phoneNumber);
+                    command.Parameters.AddWithValue("@Email", email);
+                    command.Parameters.AddWithValue("@ContactType", (int)contactType);
+                    command.Parameters.AddWithValue("@CreatedAt", DateTime.Now);
+
+                    command.ExecuteNonQuery();
+                }
             }
 
-            var contact = new Contact
-            {
-                Id = id,
-                Name = name,
-                PhoneNumber = phoneNumber,
-                Email = email,
-                ContactType = contactType,
-                CreatedAt = DateTime.Now
-            };
-
-            Contacts.Add(contact);
             Console.WriteLine("Contact added successfully.");
-            SaveContacts();
-        }
-        catch (ContactException)
-        {
-            throw;
         }
         catch (Exception ex)
         {
@@ -141,30 +146,66 @@ internal sealed class ContactManager : IContactManager
     {
         try
         {
-            var contact = FindContact(phoneNumber);
-
-            if (contact is null)
+            using (MySqlConnection connection = new MySqlConnection(ConnectionString))
             {
-                throw new ContactException("Unable to delete contact as it does not exist!");
+                connection.Open();
+
+                string deleteQuery = "DELETE FROM Contacts WHERE PhoneNumber = @PhoneNumber";
+
+                using (MySqlCommand command = new MySqlCommand(deleteQuery, connection))
+                {
+                    command.Parameters.AddWithValue("@PhoneNumber", phoneNumber);
+
+                    int rowsAffected = command.ExecuteNonQuery();
+
+                    if (rowsAffected == 0)
+                    {
+                        throw new ContactException("Unable to delete contact as it does not exist!");
+                    }
+                }
             }
 
-            Contacts.Remove(contact);
-            RefreshContacts();
-        }
-        catch (ContactException)
-        {
-            throw;
+            Console.WriteLine("Contact deleted successfully.");
         }
         catch (Exception ex)
         {
             throw new ContactException($"Error deleting contact: {ex.Message}", ex);
         }
     }
+
     public Contact? FindContact(string phoneNumber)
     {
         try
         {
-            return Contacts.Find(c => c.PhoneNumber == phoneNumber);
+            using (MySqlConnection connection = new MySqlConnection(ConnectionString))
+            {
+                connection.Open();
+
+                string selectQuery = "SELECT * FROM Contacts WHERE PhoneNumber = @PhoneNumber";
+
+                using (MySqlCommand command = new MySqlCommand(selectQuery, connection))
+                {
+                    command.Parameters.AddWithValue("@PhoneNumber", phoneNumber);
+
+                    using (MySqlDataReader reader = command.ExecuteReader())
+                    {
+                        if (reader.Read())
+                        {
+                            return new Contact
+                            {
+                                Id = reader.GetInt32("Id"),
+                                Name = reader.GetString("Name"),
+                                PhoneNumber = reader.GetString("PhoneNumber"),
+                                Email = reader.IsDBNull(reader.GetOrdinal("Email")) ? null : reader.GetString("Email"),
+                                ContactType = (ContactType)reader.GetInt32("ContactType"),
+                                CreatedAt = reader.GetDateTime("CreatedAt")
+                            };
+                        }
+                    }
+                }
+            }
+
+            return null;
         }
         catch (Exception ex)
         {
@@ -200,30 +241,52 @@ internal sealed class ContactManager : IContactManager
     {
         try
         {
-            // LoadContacts();
-
-            int contactCount = Contacts.Count;
-
-            Console.WriteLine("You have " + "contact".ToQuantity(contactCount));
-
-            if (contactCount == 0)
+            using (MySqlConnection connection = new MySqlConnection(ConnectionString))
             {
-                Console.WriteLine("There is no contact added yet.");
-                return;
+                connection.Open();
+
+                string selectQuery = "SELECT * FROM Contacts";
+
+                using (MySqlCommand command = new MySqlCommand(selectQuery, connection))
+                using (MySqlDataReader reader = command.ExecuteReader())
+                {
+                    List<Contact> contacts = new List<Contact>();
+
+                    while (reader.Read())
+                    {
+                        Contact contact = new Contact
+                        {
+                            Id = reader.GetInt32("Id"),
+                            Name = reader.GetString("Name"),
+                            PhoneNumber = reader.GetString("PhoneNumber"),
+                            Email = reader.IsDBNull(reader.GetOrdinal("Email")) ? null : reader.GetString("Email"),
+                            ContactType = (ContactType)reader.GetInt32("ContactType"),
+                            CreatedAt = reader.GetDateTime("CreatedAt")
+                        };
+
+                        contacts.Add(contact);
+                    }
+
+                    int contactCount = contacts.Count;
+
+                    Console.WriteLine("You have " + "contact".ToQuantity(contactCount));
+
+                    if (contactCount == 0)
+                    {
+                        Console.WriteLine("There are no contacts added yet.");
+                        return;
+                    }
+
+                    var table = new ConsoleTable("Id", "Name", "Phone Number", "Email", "Contact Type", "Date Created");
+
+                    foreach (var contact in contacts)
+                    {
+                        table.AddRow(contact.Id, contact.Name, contact.PhoneNumber, contact.Email, ((ContactType)contact.ContactType).Humanize(), contact.CreatedAt.Humanize());
+                    }
+
+                    table.Write(Format.Alternative);
+                }
             }
-
-            var table = new ConsoleTable("Id", "Name", "Phone Number", "Email", "Contact Type", "Date Created");
-
-            foreach (var contact in Contacts)
-            {
-                table.AddRow(contact.Id, contact.Name, contact.PhoneNumber, contact.Email, ((ContactType)contact.ContactType).Humanize(), contact.CreatedAt.Humanize());
-            }
-
-            table.Write(Format.Alternative);
-        }
-        catch (ContactException)
-        {
-            throw;
         }
         catch (Exception ex)
         {
@@ -235,27 +298,59 @@ internal sealed class ContactManager : IContactManager
     {
         try
         {
-            var contact = FindContact(phoneNumber);
-
-            if (contact is null)
+            using (MySqlConnection connection = new MySqlConnection(ConnectionString))
             {
-                throw new ContactException("Contact does not exist!");
+                connection.Open();
+
+                string updateQuery = "UPDATE Contacts SET Email = @Email WHERE PhoneNumber = @PhoneNumber";
+
+                using (MySqlCommand command = new MySqlCommand(updateQuery, connection))
+                {
+                    command.Parameters.AddWithValue("@Email", email);
+                    command.Parameters.AddWithValue("@PhoneNumber", phoneNumber);
+
+                    int rowsAffected = command.ExecuteNonQuery();
+
+                    if (rowsAffected == 0)
+                    {
+                        throw new ContactException("Unable to update contact as it does not exist!");
+                    }
+                }
             }
 
-            contact.Name = name;
-            contact.Email = email;
             Console.WriteLine("Contact updated successfully.");
-            RefreshContacts();
-        }
-        catch (ContactException)
-        {
-            throw;
         }
         catch (Exception ex)
         {
             throw new ContactException($"Error updating contact: {ex.Message}", ex);
         }
     }
+
+    // public void UpdateContact(string phoneNumber, string name, string email)
+    // {
+    //     try
+    //     {
+    //         var contact = FindContact(phoneNumber);
+
+    //         if (contact is null)
+    //         {
+    //             throw new ContactException("Contact does not exist!");
+    //         }
+
+    //         contact.Name = name;
+    //         contact.Email = email;
+    //         Console.WriteLine("Contact updated successfully.");
+    //         RefreshContacts();
+    //     }
+    //     catch (ContactException)
+    //     {
+    //         throw;
+    //     }
+    //     catch (Exception ex)
+    //     {
+    //         throw new ContactException($"Error updating contact: {ex.Message}", ex);
+    //     }
+    // }
 
     private void Print(Contact contact)
     {
