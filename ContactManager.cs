@@ -117,7 +117,7 @@ internal sealed class ContactManager : IContactManager
                         command.Parameters.AddWithValue("@Name", contact.Name);
                         command.Parameters.AddWithValue("@PhoneNumber", contact.PhoneNumber);
                         command.Parameters.AddWithValue("@Email", contact.Email);
-                        command.Parameters.AddWithValue("@ContactType", (int)contact.ContactType);
+                        command.Parameters.AddWithValue("@ContactType", contact.ContactType);
                         command.Parameters.AddWithValue("@CreatedAt", contact.CreatedAt);
 
                         command.ExecuteNonQuery();
@@ -135,6 +135,13 @@ internal sealed class ContactManager : IContactManager
     {
         try
         {
+            var isContactExist = IsContactExist(phoneNumber);
+
+            if (IsContactExist(phoneNumber))
+            {
+                Console.WriteLine("Contact already exists!");
+                return;
+            }
             Contact newContact = new Contact
             {
                 Id = Contacts.Count + 1, // Assuming auto-increment is not used in the database

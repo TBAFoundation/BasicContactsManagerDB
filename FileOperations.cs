@@ -17,8 +17,8 @@ internal class FileOperations
         {
             using (StreamReader reader = new StreamReader(FilePath))
             {
-                string? line;
-                while ((line = reader.ReadLine()) != null)
+                string line;
+                while ((line = reader.ReadLine()!) != null)
                 {
                     Contact contact = DeserializeContact(line);
                     contacts.Add(contact);
