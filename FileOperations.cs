@@ -17,8 +17,8 @@ internal class FileOperations
         {
             using (StreamReader reader = new StreamReader(FilePath))
             {
-                string line;
-                while ((line = reader.ReadLine()!) != null)
+                string? line;
+                while ((line = reader.ReadLine()) != null)
                 {
                     Contact contact = DeserializeContact(line);
                     contacts.Add(contact);
@@ -88,7 +88,7 @@ internal class FileOperations
             };
         }
         HandleContactException("Invalid contact format in the file.", null);
-        return null; // Unreachable, but needed for compiler
+        return new Contact(); // Unreachable, but needed for compiler
     }
 
     private string SerializeContact(Contact contact)
@@ -96,9 +96,9 @@ internal class FileOperations
         return $"{contact.Id}|{contact.Name}|{contact.PhoneNumber}|{contact.Email}|{(int)contact.ContactType}|{contact.CreatedAt}";
     }
 
-    private static void HandleContactException(string message, Exception ex)
+    private static void HandleContactException(string message, Exception? ex)
     {
-        throw new ContactException(message, ex);
+        throw new ContactException(message, ex ?? new Exception());
     }
 }
 
