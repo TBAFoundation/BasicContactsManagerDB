@@ -45,6 +45,10 @@
         "net8.0": {
           "targetAlias": "net8.0",
           "dependencies": {
+            "AspNetCore.HealthChecks.MySql": {
+              "target": "Package",
+              "version": "[8.0.0, )"
+            },
             "ConsoleTableExt": {
               "target": "Package",
               "version": "[3.2.0, )"
@@ -59,7 +63,11 @@
             },
             "MySql.Data": {
               "target": "Package",
-              "version": "[8.0.26, )"
+              "version": "[8.3.0, )"
+            },
+            "MySqlConnector": {
+              "target": "Package",
+              "version": "[2.3.5, )"
             },
             "Newtonsoft.Json": {
               "target": "Package",
