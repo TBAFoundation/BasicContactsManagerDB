@@ -93,7 +93,7 @@ internal class FileOperations
 
     private string SerializeContact(Contact contact)
     {
-        return $"{contact.Id}|{contact.Name}|{contact.PhoneNumber}|{contact.Email}|{(int)contact.ContactType}|{contact.CreatedAt}";
+        return $"{contact.Id}|{contact.Name}|{contact.PhoneNumber}|{contact.Email}|{contact.ContactType.ToString()}|{contact.CreatedAt}";
     }
 
     private static void HandleContactException(string message, Exception? ex)
